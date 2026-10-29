@@ -1,21 +1,23 @@
-name: Build executables
+name: Build and Release
 
 on:
   push:
-    branches: ["main"]
-  pull_request:
-    branches: ["main"]
+    tags:
+      - "v*"
 
 jobs:
   build:
     runs-on: ${{ matrix.os }}
+
     strategy:
       fail-fast: false
+
       matrix:
         include:
           - os: ubuntu-latest
-            platform: linux-debian
+            platform: linux
             executable: MemoryPresenter
+
           - os: windows-latest
             platform: windows
             executable: MemoryPresenter.exe
@@ -32,24 +34,57 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -r requirements.txt pyinstaller
+          python -m pip install -r requirements.txt
+          python -m pip install pyinstaller
 
       - name: Build executable
         run: python build.py
 
       - name: Create release ZIP
+        shell: bash
         env:
           EXECUTABLE: ${{ matrix.executable }}
           PLATFORM: ${{ matrix.platform }}
         run: |
-          python -c "import os, shutil; from pathlib import Path; source=Path('dist'); release=Path('release'); release.mkdir(); shutil.copy2(source / os.environ['EXECUTABLE'], release / os.environ['EXECUTABLE']); shutil.copytree(source / 'images', release / 'images'); shutil.make_archive(str(source / ('MemoryPresenter-' + os.environ['PLATFORM'])), 'zip', root_dir=release)"
+          mkdir release
 
-      - name: Upload executable and ZIP
+          cp "dist/${EXECUTABLE}" release/
+
+          if [ -d "dist/images" ]; then
+            cp -r dist/images release/images
+          fi
+
+          cd release
+          zip -r "../MemoryPresenter-${PLATFORM}.zip" .
+          cd ..
+
+      - name: Upload ZIP artifact
         uses: actions/upload-artifact@v4
         with:
           name: MemoryPresenter-${{ matrix.platform }}
-          path: |
-            dist/${{ matrix.executable }}
-            dist/images/
-            dist/MemoryPresenter-${{ matrix.platform }}.zip
-          if-no-files-found: error
+          path: MemoryPresenter-${{ matrix.platform }}.zip
+
+  release:
+    needs: build
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Display artifact structure
+        run: find artifacts
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            artifacts/**/MemoryPresenter-linux.zip
+            artifacts/**/MemoryPresenter-windows.zip
