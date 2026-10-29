@@ -1,7 +1,8 @@
 # Memory Presenter
 
 A locally running memory game application built with Flask and
-Flask-SocketIO. This repository contains only source code, neutral demo
+Flask-SocketIO. When started as an executable, it also provides a system tray
+icon with options to open the browser or exit the server. This repository contains only source code, neutral demo
 graphics, and public sample data. Personal photos, audio/video files, and
 other private media do not belong in this repository.
 
@@ -18,6 +19,10 @@ py -3 app.py
 
 Then open the moderator view at `http://127.0.0.1:5000/moderator` and the
 display view at `http://127.0.0.1:5000/display`.
+
+The server shuts down automatically 30 seconds after the last browser client
+disconnects. It can also be stopped with the `Beenden` button in the moderator
+view or from the system tray menu.
 
 ## Build a Windows executable
 

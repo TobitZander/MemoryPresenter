@@ -1,8 +1,18 @@
 import threading
 import time
+import urllib.error
+import urllib.request
 import webbrowser
 
-from flask import Flask, render_template, send_from_directory
+import pystray
+from PIL import Image, ImageDraw
+from flask import (
+    Flask,
+    has_request_context,
+    render_template,
+    request,
+    send_from_directory,
+)
 from flask_socketio import SocketIO
 
 from config import CARD_BACK_IMAGE, IMAGE_ROOT, MEMORY_SETS
@@ -12,6 +22,13 @@ from game_state import GameState
 app = Flask(__name__)
 socketio = SocketIO(app, async_mode="threading")
 game = GameState()
+SERVER_URL = "http://127.0.0.1:5000/moderator"
+SHUTDOWN_URL = "http://127.0.0.1:5000/internal-shutdown"
+_clients = set()
+_clients_lock = threading.Lock()
+last_client_disconnect = None
+shutdown_requested = threading.Event()
+tray_icon = None
 
 
 @app.route("/")
@@ -44,8 +61,99 @@ def favicon():
     return send_from_directory(IMAGE_ROOT, "favicon.ico")
 
 
+@app.post("/internal-shutdown")
+def internal_shutdown():
+    request_shutdown()
+    return "", 204
+
+
 def broadcast():
     socketio.emit("state", game.to_dict())
+
+
+def request_shutdown():
+    first_request = not shutdown_requested.is_set()
+    if first_request:
+        shutdown_requested.set()
+        socketio.emit("server_shutdown")
+        if tray_icon is not None:
+            tray_icon.stop()
+    if has_request_context():
+        socketio.stop()
+        return
+    try:
+        urllib.request.urlopen(
+            urllib.request.Request(SHUTDOWN_URL, method="POST"),
+            timeout=2,
+        ).close()
+    except (ConnectionError, TimeoutError, urllib.error.URLError) as error:
+        app.logger.warning("Could not request server shutdown: %s", error)
+
+
+def monitor_client_disconnects():
+    while not shutdown_requested.wait(1):
+        with _clients_lock:
+            disconnected_at = last_client_disconnect
+            no_clients = not _clients
+        if (
+            no_clients
+            and disconnected_at is not None
+            and time.monotonic() - disconnected_at >= 30
+        ):
+            request_shutdown()
+            return
+
+
+def create_tray_image():
+    image = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(image)
+    draw.rounded_rectangle((4, 4, 60, 60), radius=14, fill="#285d91")
+    draw.ellipse((14, 17, 26, 31), fill="#ffffff")
+    draw.ellipse((38, 17, 50, 31), fill="#ffffff")
+    draw.arc((16, 20, 48, 49), 20, 160, fill="#ffffff", width=4)
+    return image
+
+
+def open_browser(_icon, _item):
+    webbrowser.open_new(SERVER_URL)
+
+
+def exit_from_tray(_icon, _item):
+    request_shutdown()
+
+
+def run_server():
+    socketio.start_background_task(timer_loop, game, socketio)
+    threading.Timer(1.0, lambda: webbrowser.open_new(SERVER_URL)).start()
+    try:
+        socketio.run(
+            app,
+            host="127.0.0.1",
+            port=5000,
+            debug=False,
+            allow_unsafe_werkzeug=True,
+        )
+    finally:
+        shutdown_requested.set()
+        if tray_icon is not None:
+            tray_icon.stop()
+
+
+@socketio.on("connect")
+def client_connected():
+    global last_client_disconnect
+    with _clients_lock:
+        _clients.add(request.sid)
+        last_client_disconnect = None
+
+
+@socketio.on("disconnect")
+def client_disconnected():
+    global last_client_disconnect
+    with _clients_lock:
+        _clients.discard(request.sid)
+        if not _clients:
+            last_client_disconnect = time.monotonic()
 
 
 @socketio.on("request_state")
@@ -205,16 +313,29 @@ def update_settings(data):
     broadcast()
 
 
+@socketio.on("shutdown")
+def shutdown():
+    request_shutdown()
+
+
 if __name__ == "__main__":
-    socketio.start_background_task(timer_loop, game, socketio)
-    threading.Timer(
-        1.0,
-        lambda: webbrowser.open_new("http://127.0.0.1:5000/moderator"),
-    ).start()
-    socketio.run(
-        app,
-        host="127.0.0.1",
-        port=5000,
-        debug=False,
-        allow_unsafe_werkzeug=True,
+    tray_icon = pystray.Icon(
+        "memory-presenter",
+        create_tray_image(),
+        "Memory Presenter",
+        pystray.Menu(
+            pystray.MenuItem("Browser öffnen", open_browser),
+            pystray.MenuItem("Beenden", exit_from_tray),
+        ),
     )
+    monitor_thread = threading.Thread(
+        target=monitor_client_disconnects,
+        name="client-disconnect-monitor",
+        daemon=True,
+    )
+    monitor_thread.start()
+    server_thread = threading.Thread(target=run_server, name="web-server", daemon=True)
+    server_thread.start()
+    tray_icon.run()
+    if not shutdown_requested.is_set():
+        request_shutdown()

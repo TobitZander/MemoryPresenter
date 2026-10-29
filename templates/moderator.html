@@ -26,6 +26,7 @@
             <button id="tiebreakButton" class="tiebreak-control" hidden onclick="socket.emit('start_tiebreak')">Zusatzrunde starten</button>
             <button class="button-link" type="button" onclick="openDisplayWindow()">Display öffnen</button>
             <button id="settingsToggle" type="button" aria-controls="settings" aria-expanded="false" onclick="toggleSettings()">Einstellungen</button>
+            <button type="button" onclick="shutdownServer()">Beenden</button>
         </section>
         <section id="settings" class="settings" hidden>
             <label>Zeilen <input id="settingRows" type="number" min="1"></label>
@@ -101,6 +102,10 @@
                 auto_close_delay: document.getElementById("settingCloseDelay").value,
                 randomize_all_memories: document.getElementById("settingRandomMemories").checked
             });
+        }
+        function shutdownServer() {
+            socket.emit("shutdown");
+            window.setTimeout(() => window.close(), 200);
         }
     </script>
 </body>

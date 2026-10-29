@@ -39,6 +39,8 @@ def main() -> int:
         f"static{data_separator}static",
         "--hidden-import",
         "engineio.async_drivers.threading",
+        "--collect-submodules",
+        "pystray",
         "app.py",
     ]
     try:

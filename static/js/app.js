@@ -349,6 +349,7 @@ function update(stateData) {
 
 socket.on("state", update);
 socket.on("error_message", (data) => window.alert(data.message));
+socket.on("server_shutdown", () => window.close());
 window.addEventListener("load", () => socket.emit("request_state"));
 document.addEventListener("keydown", (event) => {
     if (!state) return;
