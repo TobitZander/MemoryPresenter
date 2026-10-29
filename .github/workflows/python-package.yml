@@ -3,7 +3,7 @@ name: Build and Release
 on:
   push:
     tags:
-      - "v*"
+      - "*"
 
 jobs:
   build:
@@ -41,22 +41,11 @@ jobs:
         run: python build.py
 
       - name: Create release ZIP
-        shell: bash
         env:
           EXECUTABLE: ${{ matrix.executable }}
           PLATFORM: ${{ matrix.platform }}
         run: |
-          mkdir release
-
-          cp "dist/${EXECUTABLE}" release/
-
-          if [ -d "dist/images" ]; then
-            cp -r dist/images release/images
-          fi
-
-          cd release
-          zip -r "../MemoryPresenter-${PLATFORM}.zip" .
-          cd ..
+          python -c "import os, shutil; from pathlib import Path; from zipfile import ZIP_DEFLATED, ZipFile; dist=Path('dist'); release=Path('release'); release.mkdir(); shutil.copy2(dist / os.environ['EXECUTABLE'], release / os.environ['EXECUTABLE']); shutil.copytree(dist / 'images', release / 'images'); archive=dist / ('MemoryPresenter-' + os.environ['PLATFORM'] + '.zip'); zip_file=ZipFile(archive, 'w', ZIP_DEFLATED); [zip_file.write(path, path.relative_to(release)) for path in release.rglob('*') if path.is_file()]; zip_file.close()"
 
       - name: Upload ZIP artifact
         uses: actions/upload-artifact@v4
