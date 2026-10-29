@@ -30,6 +30,7 @@ def main() -> int:
         "--noconfirm",
         "--clean",
         "--onefile",
+        "--windowed",
         "--name",
         NAME,
         "--add-data",
