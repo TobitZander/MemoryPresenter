@@ -14,13 +14,13 @@ jobs:
 
       matrix:
         include:
-          - os: debian-latest
+          - os: ubuntu-latest
             platform: linux-debian
-            executable: MemoryPresenter-linux-debian
+            executable: MemoryPresenter
 
           - os: windows-latest
             platform: windows
-            executable: MemoryPresenter-windows.exe
+            executable: MemoryPresenter.exe
 
     steps:
       - name: Check out repository
