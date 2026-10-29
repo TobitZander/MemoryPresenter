@@ -1,4 +1,4 @@
-"""Build the native Wedding Memory executable for the current operating system."""
+"""Build the native Memory Presenter executable for the current operating system."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ from shutil import copytree
 
 
 ROOT = Path(__file__).resolve().parent
-NAME = "WeddingMemory"
+NAME = "MemoryPresenter"
 
 
 def main() -> int:
