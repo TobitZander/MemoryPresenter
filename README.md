@@ -1,4 +1,4 @@
-# Wedding Presenter
+# Memory Presenter
 
 A locally running memory game application built with Flask and
 Flask-SocketIO. This repository contains only source code, neutral demo
