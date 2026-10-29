@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Wedding Memory</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+    <script src="/static/js/socket.io.min.js"></script>
+</head>
+<body class="display light-mode">
+    <header class="display-header"><span id="matchStatus" class="match-status" aria-live="polite"></span><span id="memoryName"></span><strong id="activeTeam">-</strong><span id="time">00:00</span><span id="mismatchTime" hidden></span></header>
+    <div class="board-wrap">
+        <div class="letters"></div>
+        <div class="row-numbers"></div>
+        <div class="board"></div>
+    </div>
+    <p id="winner" class="display-winner" hidden></p>
+    <div id="matchCelebration" class="match-celebration" aria-hidden="true">🎉</div>
+    <aside id="rules" class="rules display-rules" hidden>
+        <h2>Spielregeln</h2>
+        <ol>
+            <li>Jeder Tisch spielt als Team.</li>
+            <li>Das Spiel startet bei der ersten Auswahl oder geöffneten Karte.</li>
+            <li>Jeder Tisch hat ein konfigurierbares Zeitlimit.</li>
+            <li>Ein Treffer bringt einen Punkt; danach ist der nächste Tisch an der Reihe.</li>
+            <li>Ein Fehlversuch bleibt kurz offen, wird danach geschlossen und wechselt zum nächsten Tisch.</li>
+            <li>Beim Zoom eines Fehlversuchs pausiert die Wartezeit. Beide Ansichten zeigen nur die verbleibende Zeit.</li>
+            <li>Die Punkte werden über alle Memorys gesammelt. Nach dem letzten Memory werden alle Platzierungen angezeigt.</li>
+            <li>Bei Gleichstand startet der Moderator eine Zusatzrunde mit den punktgleichen Teams.</li>
+            <li>Gleiche Punktstände teilen sich einen Platz. Das höchste Ergebnis gewinnt.</li>
+        </ol>
+    </aside>
+    <div id="lightbox" class="lightbox" hidden></div>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

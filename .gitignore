@@ -1,0 +1,21 @@
+/build
+*.spec
+
+# Local Python and build artifacts
+__pycache__/
+*.py[cod]
+dist/
+
+# Local configuration and secrets
+.env
+.env.*
+
+# Personal media must stay outside the repository.
+images/**/*.jpg
+images/**/*.jpeg
+images/**/*.png
+images/**/*.webp
+images/**/*.gif
+images/**/*.mp3
+images/**/*.mp4
+images/**/*.mepj

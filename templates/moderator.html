@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Wedding Memory - Moderator</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+    <script src="/static/js/socket.io.min.js"></script>
+</head>
+<body class="moderator light-mode">
+    <main>
+        <header class="toolbar">
+            <div><span class="eyebrow">Wedding Memory</span><h1>Moderator</h1></div>
+            <div class="status"><span id="matchStatus" class="match-status" aria-live="polite"></span><strong id="activeTeam">-</strong><span id="time">00:00</span><span id="mismatchTime" hidden></span></div>
+        </header>
+        <section class="controls">
+            <button onclick="socket.emit('prev_team')">← Tisch</button>
+            <button onclick="socket.emit('next_team')">Tisch →</button>
+            <button onclick="socket.emit('reset_time')">Zeit zurücksetzen</button>
+            <button onclick="socket.emit('reset_game')">Neues Spiel</button>
+            <button onclick="socket.emit('toggle_rules')">Regeln</button>
+            <button id="pauseToggle" onclick="socket.emit('toggle_pause')">Pause</button>
+            <button id="themeToggle" onclick="socket.emit('toggle_theme')">White-Mode</button>
+            <button onclick="socket.emit('skip_memory')">Memory überspringen</button>
+            <button id="tiebreakButton" class="tiebreak-control" hidden onclick="socket.emit('start_tiebreak')">Zusatzrunde starten</button>
+            <button class="button-link" type="button" onclick="openDisplayWindow()">Display öffnen</button>
+            <button id="settingsToggle" type="button" aria-controls="settings" aria-expanded="false" onclick="toggleSettings()">Einstellungen</button>
+        </section>
+        <section id="settings" class="settings" hidden>
+            <label>Zeilen <input id="settingRows" type="number" min="1"></label>
+            <label>Spalten <input id="settingCols" type="number" min="1"></label>
+            <label>Teams <input id="settingTeams" type="number" min="1"></label>
+            <label>Rundenzeit (s) <input id="settingRoundTime" type="number" min="1"></label>
+            <label>Fehlversuch (s) <input id="settingCloseDelay" type="number" min="0" step="0.5"></label>
+            <label class="checkbox-setting"><input id="settingRandomMemories" type="checkbox"> Memorys zufällig spielen</label>
+            <button onclick="saveSettings()">Einstellungen speichern</button>
+        </section>
+        <div class="moderator-content">
+            <nav id="memoryList" class="memory-list memory-sidebar" aria-label="Memory-Auswahl"></nav>
+            <div class="moderator-sidebar">
+                <ol class="teams"></ol>
+            </div>
+            <div class="moderator-board board-wrap">
+                <div class="letters"></div>
+                <div class="row-numbers"></div>
+                <div class="board"></div>
+                <div id="cardDescriptions" class="card-descriptions">
+                    <div class="card-description-panel">Noch keine Karte geöffnet.</div>
+                    <div class="card-description-panel">Noch keine Karte geöffnet.</div>
+                </div>
+            </div>
+        </div>
+        <section class="shortcuts">
+            <strong>Tastatur</strong>
+            <span><kbd>A-F</kbd> Spalte markieren</span>
+            <span><kbd>1-9</kbd> Zeile markieren</span>
+            <span><kbd>Strg+P</kbd> Spiel pausieren/starten</span>
+            <span><kbd>Leertaste</kbd> Zoom / Zeit zurücksetzen</span>
+            <span><kbd>Esc</kbd> Auswahl löschen / Zoom schließen</span>
+            <span><kbd>Strg + Maus</kbd> Karte im Display markieren</span>
+        </section>
+        <p id="winner" class="winner" hidden></p>
+    </main>
+    <div id="matchCelebration" class="match-celebration" aria-hidden="true">🎉</div>
+    <aside id="rules" class="rules" hidden>
+        <button class="rules-close" type="button" onclick="socket.emit('toggle_rules')">×</button>
+        <h2>Spielregeln</h2>
+        <ol>
+            <li>Jeder Tisch spielt als Team.</li>
+            <li>Das Spiel startet bei der ersten Auswahl oder geöffneten Karte.</li>
+            <li>Jeder Tisch hat ein konfigurierbares Zeitlimit.</li>
+            <li>Ein Treffer bringt einen Punkt; danach ist der nächste Tisch an der Reihe.</li>
+            <li>Ein Fehlversuch bleibt kurz offen, wird danach geschlossen und wechselt zum nächsten Tisch.</li>
+            <li>Beim Zoom eines Fehlversuchs pausiert die Wartezeit. Beide Ansichten zeigen nur die verbleibende Zeit.</li>
+            <li>Die Punkte werden über alle Memorys gesammelt. Nach dem letzten Memory werden alle Platzierungen angezeigt.</li>
+            <li>Bei Gleichstand startet der Moderator eine Zusatzrunde mit den punktgleichen Teams.</li>
+            <li>Gleiche Punktstände teilen sich einen Platz. Das höchste Ergebnis gewinnt.</li>
+        </ol>
+    </aside>
+    <div id="lightbox" class="lightbox" hidden></div>
+    <script src="/static/js/app.js"></script>
+    <script>
+        function openDisplayWindow() {
+            const displayWindow = window.open("/display", "wedding-memory-display",
+                "popup=yes,width=1280,height=720,noopener");
+            if (displayWindow) displayWindow.focus();
+        }
+        function toggleSettings() {
+            const settings = document.getElementById("settings");
+            const button = document.getElementById("settingsToggle");
+            settings.hidden = !settings.hidden;
+            button.setAttribute("aria-expanded", String(!settings.hidden));
+        }
+        function saveSettings() {
+            socket.emit("update_settings", {
+                grid_rows: document.getElementById("settingRows").value,
+                grid_cols: document.getElementById("settingCols").value,
+                team_count: document.getElementById("settingTeams").value,
+                round_time_seconds: document.getElementById("settingRoundTime").value,
+                auto_close_delay: document.getElementById("settingCloseDelay").value,
+                randomize_all_memories: document.getElementById("settingRandomMemories").checked
+            });
+        }
+    </script>
+</body>
+</html>

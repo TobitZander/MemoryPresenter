@@ -1,0 +1,578 @@
+Projekt: Wedding Memory
+
+Ziel
+====
+
+Entwicklung eines lokal laufenden Hochzeitsspiels ("Memory") für die Darstellung auf einer Leinwand bzw. einem Beamer.
+
+Die Gäste spielen gruppenweise (Tische) gegeneinander.
+
+Die Bedienung erfolgt über einen Moderator auf einem Notebook.
+
+Das Spiel soll professionell wirken, möglichst einfach bedienbar sein, keine Cloud-Dienste benötigen und vollständig lokal auf einem einzelnen Rechner laufen.
+
+Technologie
+===========
+
+Backend:
+- Python
+- Flask
+- Flask-SocketIO
+
+Frontend:
+- HTML
+- CSS
+- JavaScript
+
+Betrieb:
+- localhost only
+- keine Internetverbindung erforderlich
+- keine Cloud-Anbindung
+- keine Datenbank erforderlich
+
+Anzeige
+========
+
+Es existieren zwei Browserfenster:
+
+1. Moderatoransicht
+   URL:
+   http://127.0.0.1:5000/moderator
+
+2. Displayansicht
+   URL:
+   http://127.0.0.1:5000/display
+
+Windows wird im Modus "Erweiterter Desktop" betrieben.
+
+Moderatoransicht:
+- Notebookbildschirm
+
+Displayansicht:
+- Beamer
+- Vollbild
+
+Beide Ansichten werden synchronisiert.
+
+Designziele
+===========
+
+Displayansicht:
+- Fokus auf möglichst große Karten
+- sehr wenig UI
+- modernes Design
+- keine Win95-Optik
+- Light-Mode als gut sichtbarer Standard für Beamer
+- optionaler Dark-Mode
+
+Moderatoransicht:
+- Bedienoberfläche
+- Anzeigen für Team und Spielstatus
+- zusätzliche Steuerungselemente
+
+Konfiguration
+=============
+
+Alle wichtigen Parameter sollen zentral definiert werden:
+
+GRID_ROWS
+GRID_COLS
+
+TEAM_COUNT
+
+ROUND_TIME_SECONDS
+
+MEMORY_SETS
+
+AUTO_CLOSE_DELAY
+
+`MEMORY_SETS` wird automatisch aus den Unterordnern unter `images` erkannt und
+muss nicht manuell gepflegt werden. Änderungen sollen ohne Anpassung der
+Spiellogik möglich sein.
+
+Gruppen
+========
+
+Standard:
+
+Tisch 1
+Tisch 2
+...
+Tisch 10
+
+Anzahl frei konfigurierbar.
+
+Jede Gruppe besitzt:
+
+- Namen
+- Punktestand
+
+Aktive Gruppe wird hervorgehoben.
+
+Spielablauf
+===========
+
+- Eine Gruppe ist aktiv.
+- Countdown läuft.
+- Gruppe nennt Koordinaten.
+- Moderator öffnet Karten.
+- Bei Treffer:
+  - Punkt für Gruppe
+  - Zeit wird zurückgesetzt
+  - nächste Gruppe ist an der Reihe
+
+- Bei Fehlversuch:
+  - Karten bleiben kurz sichtbar und schließen automatisch
+  - anschließend ist die nächste Gruppe an der Reihe
+
+- Bei Zeitablauf:
+  - offene Karten schließen
+  - nächste Gruppe
+  - Timer zurücksetzen
+
+Rundenzeit
+==========
+
+Konfigurierbar.
+
+Beispiel:
+
+45 Sekunden
+
+Timer läuft serverseitig.
+
+Keine lokale JavaScript-Zeitverwaltung.
+
+Memory-Sets
+===========
+
+Alle Unterordner unter `images` mit unterstützten Bilddateien werden
+automatisch als Memory erkannt. Die Anzahl der Memorys wird nicht fest in der
+Konfiguration eingetragen.
+
+Die Moderatoransicht zeigt alle erkannten Memorys, markiert das aktuelle
+Memory und kann jederzeit zu einem anderen Memory wechseln. Im normalen
+Durchlauf kann ein Memory übersprungen werden.
+
+Optional kann die Reihenfolge aller Memorys zufällig bestimmt werden. Wenn ein
+Memory mehr Paare als für das konfigurierte Spielfeld benötigt enthält, werden
+die benötigten Paare zufällig ausgewählt.
+
+Bilder
+======
+
+Struktur:
+
+images/
+|
++-- memory1/
+|
++-- memory2/
+
+Dateiformat:
+
+001_A.jpg
+001_B.jpg
+
+002_A.jpg
+002_B.jpg
+
+003_A.jpg
+003_B.jpg
+
+usw.
+
+Regel:
+
+001_A gehört zu 001_B
+
+002_A gehört zu 002_B
+
+Dateiendung:
+- jpg
+- jpeg
+- png
+- svg
+- webp
+
+automatisch erkennen.
+
+Persönliche Medien werden außerhalb des Repositorys abgelegt und über
+`WEDDING_MEMORY_IMAGES` eingebunden. Das Repository enthält nur neutrale
+Demo-SVGs. Private Fotos, Audio- und Videodateien sowie persönliche
+Beschreibungen dürfen nicht versioniert werden.
+
+Karten
+======
+
+Karten werden zufällig verteilt.
+
+Spieler sehen:
+
+verdeckt:
+?
+
+offen:
+Bild
+
+gefunden:
+Bild bleibt sichtbar
+
+Aufgedeckte Bilder erhalten direkt um die sichtbare Bildfläche einen
+gemeinsamen, paarbezogenen Farbrahmen. Dieser Rahmen bleibt bei gefundenen
+Paaren sichtbar.
+
+Koordinaten
+===========
+
+Display:
+
+    A B C D E F
+
+1
+2
+3
+4
+
+Kartenpositionen werden über Koordinaten angesprochen.
+
+Beispiele:
+
+A1
+B4
+C2
+
+Tastatursteuerung
+=================
+
+Moderatorfenster besitzt Tastaturfokus.
+
+Folgender Ablauf:
+
+Gast:
+"A"
+
+Moderator:
+Taste A
+
+Anzeige:
+Spalte A hervorheben
+
+Gast:
+"4"
+
+Moderator:
+Taste 4
+
+Karte A4 öffnen
+
+Reihenfolge egal:
+
+A + 4
+
+oder
+
+4 + A
+
+beides gültig.
+
+Anzeige aktueller Eingabe:
+
+A_
+A4
+
+Esc:
+Auswahl von Zeile und Spalte löschen und Zoom schließen
+
+Maussteuerung
+=============
+
+Zusätzlich zu Tastatur:
+
+Klick auf Karte
+
+=> Karte öffnen
+
+Moderator kann frei wählen.
+
+Strg + Mausbewegung über eine Karte
+
+=> Karte im Display markieren; eine aktive Zeilen- oder Spaltenauswahl wird
+gelöscht. Der zugehörige Buchstabe und die zugehörige Zahl werden dabei wie
+bei einer Tastaturauswahl markiert. Die Karte selbst wird im Moderator nicht
+zusätzlich hervorgehoben.
+
+Beim gültigen Strg-Hover wird eine manuelle Pause automatisch aufgehoben.
+Auch die automatische Trefferpause wird dadurch freigegeben, damit nach einem
+Treffer weitergespielt werden kann. Hover über leere Felder verändert die
+Pause nicht.
+
+Bildvergrößerung
+================
+
+Bei geöffneter Karte:
+
+Leertaste
+
+oder
+
+Doppelklick
+
+=> Großansicht
+
+Bild erscheint nahezu bildschirmfüllend.
+
+Erneute Leertaste:
+
+zurück.
+
+Regeln
+======
+
+Die Regelansicht ist als synchronisiertes Overlay in Moderator und Display
+verfügbar und muss in beiden Ansichten denselben Inhalt anzeigen:
+
+1. Jeder Tisch spielt als Team.
+2. Zu Beginn ist das Spiel pausiert; die erste Auswahl oder geöffnete Karte
+   startet es.
+3. Für jeden Tisch läuft ein konfigurierbares Zeitlimit.
+4. Ein gefundenes Paar bringt einen Punkt; danach ist der nächste Tisch an der
+   Reihe.
+5. Bei einem Fehlversuch bleiben beide Karten für die konfigurierte Wartezeit
+   offen. Danach werden sie geschlossen und der nächste Tisch ist an der Reihe.
+6. Während ein falsches Paar gezoomt wird, pausiert die Wartezeit. Die
+   verbleibende Zeit wird in beiden Ansichten angezeigt.
+7. Bei Ablauf des Tisch-Zeitlimits werden offene Karten geschlossen, der
+   nächste Tisch wird aktiv und dessen Zeit wird zurückgesetzt.
+8. Punkte werden über alle regulären Memorys hinweg gesammelt.
+9. Nach dem letzten Memory werden alle Teams mit Punkten und Platzierungen
+   angezeigt. Gleiche Punktstände teilen sich einen Platz; die Rangfolge folgt
+   der Wettbewerbswertung, z. B. 1, 1, 3.
+10. Bei einem Gleichstand startet der Moderator eine Zusatzrunde nur mit den
+    punktgleichen Teams. Bei erneutem Gleichstand kann eine weitere Zusatzrunde
+    gestartet werden.
+11. Das Team bzw. die Teams mit dem höchsten Ergebnis der abgeschlossenen Runde
+    gewinnen.
+
+Gefundene Paare bleiben nach einem Treffer zunächst sichtbar, damit sie
+präsentiert werden können. Beim nächsten gültigen Öffnen werden die zuvor
+gefundenen Karten zu leeren Rasterfeldern. Das Spielfeld verschiebt sich
+nicht.
+
+Punkte
+======
+
+Punktevergabe:
+
+Treffer:
++1
+
+Punktestand aller Teams wird geführt.
+
+Anzeige primär im Moderatorfenster.
+
+Display:
+
+Team, aktiver Tisch und Punktstände werden synchron angezeigt.
+
+Countdown
+=========
+
+Anzeige:
+
+mm:ss
+
+Farbwechsel:
+
+grün
+gelb
+rot
+
+Zeitablauf:
+
+automatischer Teamwechsel
+
+Synchronisierung
+================
+
+Zentrale Datenhaltung im Server.
+
+Display und Moderator greifen auf denselben GameState zu.
+
+Verwendet wird:
+
+Flask-SocketIO
+
+Grundregel:
+
+Änderung nur auf Server.
+
+Server sendet aktualisierten Zustand an alle Clients.
+
+Erweiterte Synchronisierung:
+
+- Kartenstatus, Auswahlmarkierungen und aktiver Tisch
+- Rundentimer und Fehlversuchs-Wartezeit
+- Zoomkarte, Zoomfaktor und Bildposition
+- Memorywechsel, Pause, Regeln, Theme und Ergebnisanzeige
+
+Während ein falsches Paar gezoomt wird, bleibt die Fehlversuchs-Wartezeit
+angehalten. Moderator und Display zeigen statt zweier Timer nur die
+verbleibende Zeit bis zum Zudecken an.
+
+Architektur
+===========
+
+card.py
+
+Klasse:
+Card
+
+Attribute:
+- id
+- pair_id
+- image_path
+- open
+- matched
+
+------------
+
+memory_loader.py
+
+Verantwortlich für:
+- Bildsuche
+- Pair-Erkennung
+- Kartenobjekte
+
+------------
+
+game_state.py
+
+Verantwortlich für:
+
+- Karten
+- Teams
+- Punkte
+- Timer
+- Memorywechsel
+- Kartenauswahl
+- Match-Erkennung
+
+------------
+
+countdown.py
+
+Hintergrundthread
+
+jede Sekunde:
+
+game.tick()
+
+------------
+
+app.py
+
+Flask
+
+SocketIO
+
+Routen
+
+Events
+
+State-Verteilung
+
+Gewinnerbildschirm
+==================
+
+Nach Abschluss des letzten regulären Memorys wird die Ergebnisanzeige
+eingeblendet. Vor einer notwendigen Zusatzrunde bleibt der Zwischenstand
+sichtbar; der Moderator startet die Zusatzrunde über einen eigenen Button.
+
+Anzeige:
+
+🏆 Gewinner
+
+Alle Teams mit Punktestand und Platzierung.
+
+Teams mit gleicher Punktzahl werden in einer gemeinsamen Zeile ausgegeben und
+teilen sich denselben Platz. Die Rangfolge ist eine Wettbewerbsrangfolge, z. B.
+1, 1, 3. Für Platz 1 bis 3 werden Gold-, Silber- und Bronze-Pokal-Emojis
+verwendet.
+
+Die Zusatzrunde berücksichtigt nur die punktgleichen Teams. Ihre Punkte werden
+getrennt von den regulären Punkten gezählt. Nach der Zusatzrunde wird wieder
+eine vollständige Ergebnisanzeige dargestellt.
+
+Memory kann im normalen Durchlauf über `Memory überspringen` übersprungen
+werden. Die Anzahl der Memorys wird automatisch aus den Unterordnern unter
+`images` erkannt; sie wird nicht in der Konfiguration fest eingetragen.
+
+Erweiterte Anzeige- und Bedienanforderungen
+============================================
+
+- Die Moderatorseite wird beim Programmstart automatisch geöffnet.
+- Die Moderatorseite kann das Display in einem neuen Fenster öffnen.
+- Light-Mode ist der Standard; Dark-Mode kann umgeschaltet werden.
+- Die erste Auswahl per Tastatur oder der erste Kartenklick startet das Spiel.
+- Die Pausenfunktion ist beim Start aktiv.
+- Zeilen- und Spaltenmarkierungen werden in beiden Ansichten synchronisiert.
+- Strg-Hover markiert im Display die einzelne Karte sowie deren Spaltenbuchstaben
+  und Zeilennummer mit derselben Markierungsdarstellung wie die
+  Tastaturauswahl.
+- Die Strg-Hover-Markierung hebt eine aktive manuelle oder automatische
+  Trefferpause bei einer gültigen Karte auf.
+- Aufgedeckte Bilder zeigen den gemeinsamen Paarfarbrahmen direkt um die
+  sichtbare Bildfläche; gefundene Paare behalten diesen Rahmen.
+- Ein eigenes SVG- oder PNG-Kartenrückenbild kann konfiguriert werden.
+- Überschüssige Paare eines Memory-Ordners werden zufällig ausgewählt.
+- Bildbeschreibungen werden pro Bild aus `descriptions.csv` geladen und nur
+  dem Moderator beim Aufdecken und in der Großansicht angezeigt.
+- Ein Favicon ist Bestandteil der Anwendung.
+- Private Medien und persönliche Beschreibungen bleiben außerhalb des
+  Repositorys; neutrale Demo-SVGs ermöglichen einen direkten Funktionstest
+  nach dem Klonen.
+
+Nichtziele
+==========
+
+Nicht erforderlich:
+
+- Datenbank
+- Benutzeranmeldung
+- Cloud
+- Multiplayer über Netzwerk
+- Internetzugriff
+- Speicherung vergangener Spiele
+- komplizierte Administration
+
+Prioritäten
+===========
+
+Prio 1
+-------
+- stabile Bedienung
+- große Karten
+- einfache Steuerung
+- zuverlässige Synchronisation
+
+Prio 2
+-------
+- schönes Design
+- Animationen
+- Konfetti
+
+Prio 3
+-------
+- zusätzliche Komfortfunktionen
+
+Erfolgskriterium
+================
+
+Das Spiel soll auf einem Notebook mit erweitertem Desktop lokal gestartet werden können.
+
+Der Moderator bedient das Spiel über Maus und Tastatur.
+
+Die Gäste sehen ausschließlich die Displayansicht auf der Leinwand.
+
+Die Bilder werden automatisch aus den jeweiligen Bildordnern geladen, zufällig verteilt und als spielbares Hochzeit-Memory dargestellt.
