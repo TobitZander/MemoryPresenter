@@ -108,6 +108,8 @@ qualify for the tiebreaker.
 A custom card back can be placed as `card-back.svg` or `card-back.png` in the
 external `resources` folder and selected through `CARD_BACK_IMAGE` in `config.py`.
 A browser icon is already included at `static/favicon.svg`.
+The party-popper animation uses the Twemoji `1f389` SVG asset under
+CC-BY 4.0.
 
 The display starts with the centered contents of `resources/title_page.txt` over a
 translucent, centered card back. The moderator can hide or show this title
