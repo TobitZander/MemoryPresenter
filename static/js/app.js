@@ -44,6 +44,7 @@ function loadRules() {
                     return item;
                 }));
             rulesLoaded = true;
+            fitRulesText();
         })
         .catch((error) => {
             rulesList.replaceChildren();
@@ -51,6 +52,30 @@ function loadRules() {
             item.textContent = error.message;
             rulesList.append(item);
         });
+}
+function fitRulesText() {
+    const rules = document.getElementById("rules");
+    const rulesList = document.getElementById("rulesList");
+    if (!rules || !rulesList || rules.hidden || !rules.classList.contains("display-rules")) return;
+    const items = [...rulesList.querySelectorAll("li")];
+    if (!items.length) return;
+    const baseSize = Math.min(window.innerWidth * 0.035, window.innerHeight * 0.055, 48);
+    items.forEach((item) => {
+        item.style.fontSize = `${baseSize}px`;
+    });
+    let scale = 1;
+    const widestItem = Math.max(...items.map((item) => item.scrollWidth / item.clientWidth));
+    if (widestItem > 1) scale = Math.min(scale, 1 / widestItem);
+    const listHeight = rulesList.scrollHeight;
+    const availableHeight = rules.clientHeight - rulesList.offsetTop - 24;
+    if (listHeight > availableHeight) {
+        scale = Math.min(scale, availableHeight / listHeight);
+    }
+    if (scale < 1) {
+        items.forEach((item) => {
+            item.style.fontSize = `${baseSize * scale * 0.98}px`;
+        });
+    }
 }
 function fitTitlePageText() {
     const text = document.getElementById("titlePageText");
@@ -396,6 +421,7 @@ function update(stateData) {
     if (rules) {
         rules.hidden = !state.rules_visible;
         loadRules();
+        if (state.rules_visible) window.requestAnimationFrame(fitRulesText);
     }
     ["settingRows", "settingCols", "settingTeams", "settingRoundTime", "settingCloseDelay"].forEach((id) => {
         const input = document.getElementById(id);
@@ -417,6 +443,7 @@ socket.on("error_message", (data) => window.alert(data.message));
 socket.on("server_shutdown", () => window.close());
 window.addEventListener("load", () => socket.emit("request_state"));
 window.addEventListener("resize", fitTitlePageText);
+window.addEventListener("resize", fitRulesText);
 document.addEventListener("keydown", (event) => {
     if (!state) return;
     if (event.ctrlKey && event.key.toLowerCase() === "p") {
