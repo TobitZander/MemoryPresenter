@@ -22,6 +22,7 @@
             <button onclick="socket.emit('toggle_rules')">Regeln</button>
             <button id="pauseToggle" onclick="socket.emit('toggle_pause')">Pause</button>
             <button id="themeToggle" onclick="socket.emit('toggle_theme')">White-Mode</button>
+            <button id="titlePageToggle" onclick="socket.emit('toggle_title_page')">Titelfolie ausblenden</button>
             <button onclick="socket.emit('skip_memory')">Memory überspringen</button>
             <button id="tiebreakButton" class="tiebreak-control" hidden onclick="socket.emit('start_tiebreak')">Zusatzrunde starten</button>
             <button class="button-link" type="button" onclick="openDisplayWindow()">Display öffnen</button>
@@ -67,17 +68,7 @@
     <aside id="rules" class="rules" hidden>
         <button class="rules-close" type="button" onclick="socket.emit('toggle_rules')">×</button>
         <h2>Spielregeln</h2>
-        <ol>
-            <li>Jeder Tisch spielt als Team.</li>
-            <li>Das Spiel startet bei der ersten Auswahl oder geöffneten Karte.</li>
-            <li>Jeder Tisch hat ein konfigurierbares Zeitlimit.</li>
-            <li>Ein Treffer bringt einen Punkt; danach ist der nächste Tisch an der Reihe.</li>
-            <li>Ein Fehlversuch bleibt kurz offen, wird danach geschlossen und wechselt zum nächsten Tisch.</li>
-            <li>Beim Zoom eines Fehlversuchs pausiert die Wartezeit. Beide Ansichten zeigen nur die verbleibende Zeit.</li>
-            <li>Die Punkte werden über alle Memorys gesammelt. Nach dem letzten Memory werden alle Platzierungen angezeigt.</li>
-            <li>Bei Gleichstand startet der Moderator eine Zusatzrunde mit den punktgleichen Teams.</li>
-            <li>Gleiche Punktstände teilen sich einen Platz. Das höchste Ergebnis gewinnt.</li>
-        </ol>
+        <ol id="rulesList"></ol>
     </aside>
     <div id="lightbox" class="lightbox" hidden></div>
     <script src="/static/js/app.js"></script>

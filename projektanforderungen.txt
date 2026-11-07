@@ -86,7 +86,7 @@ MEMORY_SETS
 
 AUTO_CLOSE_DELAY
 
-`MEMORY_SETS` wird automatisch aus den Unterordnern unter `images` erkannt und
+`MEMORY_SETS` wird automatisch aus den Unterordnern unter `resources` erkannt und
 muss nicht manuell gepflegt werden. Änderungen sollen ohne Anpassung der
 Spiellogik möglich sein.
 
@@ -146,7 +146,7 @@ Keine lokale JavaScript-Zeitverwaltung.
 Memory-Sets
 ===========
 
-Alle Unterordner unter `images` mit unterstützten Bilddateien werden
+Alle Unterordner unter `resources` mit unterstützten Bilddateien werden
 automatisch als Memory erkannt. Die Anzahl der Memorys wird nicht fest in der
 Konfiguration eingetragen.
 
@@ -163,7 +163,7 @@ Bilder
 
 Struktur:
 
-images/
+resources/
 |
 +-- memory1/
 |
@@ -198,7 +198,7 @@ Dateiendung:
 automatisch erkennen.
 
 Persönliche Medien werden außerhalb des Repositorys abgelegt und über
-`WEDDING_MEMORY_IMAGES` eingebunden. Das Repository enthält nur neutrale
+`WEDDING_MEMORY_RESOURCES` eingebunden. Das Repository enthält nur neutrale
 Demo-SVGs. Private Fotos, Audio- und Videodateien sowie persönliche
 Beschreibungen dürfen nicht versioniert werden.
 
@@ -506,7 +506,7 @@ eine vollständige Ergebnisanzeige dargestellt.
 
 Memory kann im normalen Durchlauf über `Memory überspringen` übersprungen
 werden. Die Anzahl der Memorys wird automatisch aus den Unterordnern unter
-`images` erkannt; sie wird nicht in der Konfiguration fest eingetragen.
+`resources` erkannt; sie wird nicht in der Konfiguration fest eingetragen.
 
 Erweiterte Anzeige- und Bedienanforderungen
 ============================================

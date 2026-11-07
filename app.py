@@ -15,7 +15,7 @@ from flask import (
 )
 from flask_socketio import SocketIO
 
-from config import CARD_BACK_IMAGE, IMAGE_ROOT, MEMORY_SETS
+from config import CARD_BACK_IMAGE, MEMORY_SETS, RESOURCE_ROOT, RULES_PATH, TITLE_PAGE_PATH
 from countdown import timer_loop
 from game_state import GameState
 
@@ -46,19 +46,37 @@ def display():
     return render_template("display.html")
 
 
-@app.route("/images/<memory_name>/<path:filename>")
+@app.route("/resources/<memory_name>/<path:filename>")
 def image(memory_name, filename):
-    return send_from_directory(IMAGE_ROOT / memory_name, filename)
+    return send_from_directory(RESOURCE_ROOT / memory_name, filename)
 
 
 @app.route("/card-back")
 def card_back():
-    return send_from_directory(IMAGE_ROOT, CARD_BACK_IMAGE)
+    return send_from_directory(RESOURCE_ROOT, CARD_BACK_IMAGE)
+
+
+@app.route("/title-page")
+def title_page():
+    if not TITLE_PAGE_PATH.is_file():
+        return "", 404
+    return TITLE_PAGE_PATH.read_text(encoding="utf-8-sig"), 200, {
+        "Content-Type": "text/plain; charset=utf-8"
+    }
+
+
+@app.route("/rules")
+def rules():
+    if not RULES_PATH.is_file():
+        return "", 404
+    return RULES_PATH.read_text(encoding="utf-8-sig"), 200, {
+        "Content-Type": "text/plain; charset=utf-8"
+    }
 
 
 @app.route("/favicon.ico")
 def favicon():
-    return send_from_directory(IMAGE_ROOT, "favicon.ico")
+    return send_from_directory(RESOURCE_ROOT, "favicon.ico")
 
 
 @app.post("/internal-shutdown")
@@ -265,6 +283,12 @@ def toggle_rules():
 @socketio.on("toggle_theme")
 def toggle_theme():
     game.theme = "light" if game.theme == "dark" else "dark"
+    broadcast()
+
+
+@socketio.on("toggle_title_page")
+def toggle_title_page():
+    game.title_page_visible = not game.title_page_visible
     broadcast()
 
 

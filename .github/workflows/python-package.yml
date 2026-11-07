@@ -44,7 +44,7 @@ jobs:
           EXECUTABLE: ${{ matrix.executable }}
           PLATFORM: ${{ matrix.platform }}
         run: |
-          python -c "import os, shutil; from pathlib import Path; source=Path('dist'); release=Path('release'); release.mkdir(); shutil.copy2(source / os.environ['EXECUTABLE'], release / os.environ['EXECUTABLE']); shutil.copytree(source / 'images', release / 'images'); shutil.make_archive(str(source / ('MemoryPresenter-' + os.environ['PLATFORM'])), 'zip', root_dir=release)"
+          python -c "import os, shutil; from pathlib import Path; source=Path('dist'); release=Path('release'); release.mkdir(); shutil.copy2(source / os.environ['EXECUTABLE'], release / os.environ['EXECUTABLE']); shutil.copytree(source / 'resources', release / 'resources'); shutil.make_archive(str(source / ('MemoryPresenter-' + os.environ['PLATFORM'])), 'zip', root_dir=release)"
 
       - name: Upload executable and ZIP
         uses: actions/upload-artifact@v4
@@ -52,7 +52,7 @@ jobs:
           name: MemoryPresenter-${{ matrix.platform }}
           path: |
             dist/${{ matrix.executable }}
-            dist/images/
+            dist/resources/
             dist/MemoryPresenter-${{ matrix.platform }}.zip
           if-no-files-found: error
 

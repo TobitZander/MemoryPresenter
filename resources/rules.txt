@@ -1,0 +1,9 @@
+Jeder Tisch spielt als Team.
+Das Spiel startet bei der ersten Auswahl oder geöffneten Karte.
+Jeder Tisch hat ein konfigurierbares Zeitlimit.
+Ein Treffer bringt einen Punkt; danach ist der nächste Tisch an der Reihe.
+Ein Fehlversuch bleibt kurz offen, wird danach geschlossen und wechselt zum nächsten Tisch.
+Beim Zoom eines Fehlversuchs pausiert die Wartezeit. Beide Ansichten zeigen nur die verbleibende Zeit.
+Die Punkte werden über alle Memorys gesammelt. Nach dem letzten Memory werden alle Platzierungen angezeigt.
+Bei Gleichstand startet der Moderator eine Zusatzrunde mit den punktgleichen Teams.
+Gleiche Punktstände teilen sich einen Platz. Das höchste Ergebnis gewinnt.

@@ -57,18 +57,18 @@ def main() -> int:
         return 1
 
     executable = ROOT / "dist" / output_name
-    source_images = ROOT / "images"
-    output_images = ROOT / "dist" / "images"
-    if not source_images.is_dir():
+    source_resources = ROOT / "resources"
+    output_resources = ROOT / "dist" / "resources"
+    if not source_resources.is_dir():
         print(
-            f"Image folder not found: {source_images}. "
-            "The executable needs an images folder next to it.",
+            f"Resource folder not found: {source_resources}. "
+            "The executable needs a resources folder next to it.",
             file=sys.stderr,
         )
         return 1
-    copytree(source_images, output_images, dirs_exist_ok=True)
+    copytree(source_resources, output_resources, dirs_exist_ok=True)
     print(f"Created: {executable}")
-    print(f"Images copied to: {output_images}")
+    print(f"Resources copied to: {output_resources}")
     return 0
 
 

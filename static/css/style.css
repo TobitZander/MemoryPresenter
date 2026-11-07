@@ -869,13 +869,17 @@ body:not(.light-mode) .card-back {
 
 .display-winner {
     position: fixed;
-    inset: 25% 10%;
+    top: 50%;
+    left: 50%;
+    width: min(90vw, 1400px);
+    max-height: 90vh;
+    transform: translate(-50%, -50%);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     text-align: center;
-    font-size: clamp(1rem, 2.2vw, 2.2rem);
+    font-size: clamp(1.8rem, 4vw, 4.5rem);
     line-height: 1.2;
     color: #ffd36a;
     background: #151d2acc;
@@ -883,10 +887,7 @@ body:not(.light-mode) .card-back {
     border-radius: 18px;
     white-space: normal;
     overflow-wrap: anywhere;
-    max-height: 62vh;
-    overflow: hidden;
-    overflow-wrap: anywhere;
-    inset: 19% 12%
+    overflow: visible;
 }
 
 .display-winner[hidden],
@@ -895,17 +896,17 @@ body:not(.light-mode) .card-back {
 }
 
 .winner-count-1 {
-    font-size: clamp(1.2rem, 2.5vw, 2.5rem)
+    font-size: clamp(2rem, 4.5vw, 5rem)
 }
 
 .winner-count-2,
 .winner-count-3 {
-    font-size: clamp(1.1rem, 2.3vw, 2.3rem)
+    font-size: clamp(1.8rem, 3.8vw, 4rem)
 }
 
 .winner-count-4,
 .winner-count-5 {
-    font-size: clamp(1rem, 2.1vw, 2.1rem)
+    font-size: clamp(1.6rem, 3.2vw, 3.4rem)
 }
 
 .winner-count-6,
@@ -913,15 +914,75 @@ body:not(.light-mode) .card-back {
 .winner-count-8,
 .winner-count-9,
 .winner-count-10 {
-    font-size: clamp(.95rem, 1.9vw, 1.9rem);
+    font-size: clamp(1.4rem, 2.8vw, 3rem);
     padding: clamp(14px, 2vh, 24px)
 }
 
 .display-winner.pending-tiebreak {
-    inset: 22% 14%;
-    font-size: clamp(1rem, 2.2vw, 2.2rem);
+    top: 50%;
+    left: 50%;
+    width: min(90vw, 1400px);
+    font-size: clamp(1.6rem, 3.5vw, 4rem);
     background: #151d2af2;
     border: 2px solid #ffd36a
+}
+
+.title-page {
+    position: fixed;
+    z-index: 15;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    text-align: center;
+    background: #f3f5f8;
+}
+
+.title-page[hidden] {
+    display: none;
+}
+
+.title-page-backdrop {
+    position: absolute;
+    width: min(72vw, 72vh);
+    height: min(72vw, 72vh);
+    object-fit: contain;
+    opacity: .14;
+}
+
+.title-page p {
+    position: relative;
+    width: 86vw;
+    max-width: 1800px;
+    height: 82vh;
+    margin: 0;
+    color: #17202b;
+    padding: 4vh 3vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(4rem, 12vw, 12rem);
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: .02em;
+    white-space: pre;
+    overflow-wrap: normal;
+    word-break: normal;
+    overflow: hidden;
+}
+
+body:not(.light-mode) .title-page {
+    background: #10131a;
+}
+
+body:not(.light-mode) .title-page p {
+    color: #f7f7fb;
+}
+
+body:not(.light-mode) .title-page-backdrop {
+    filter: invert(1);
+    opacity: .2;
 }
 
 .winner-results {
@@ -985,7 +1046,7 @@ body:not(.light-mode) .card-back {
     background: transparent;
     cursor: grab;
     user-select: none;
-    transform-origin: 0 0
+    transform-origin: center center
 }
 
 .lightbox img:active {

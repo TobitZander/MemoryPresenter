@@ -34,20 +34,20 @@ py -3 build.py
 ```
 
 The executable is created at `dist\WeddingMemory.exe`. The build script also
-copies the local `images` folder to `dist\images`, because the images remain
+copies the local `resources` folder to `dist\resources`, because the resources remain
 external to the executable. This allows the executable to start immediately
 after a build while keeping media out of the bundled binary.
 
 ## Images outside the repository and executable
 
 Personal images are not versioned by Git and are not embedded in the
-executable. The builder copies the current local `images` folder next to the
+executable. The builder copies the current local `resources` folder next to the
 executable. You can also create or replace that folder manually:
 
 ```text
 dist\
   WeddingMemory.exe
-  images\
+  resources\
     memory1\
       001_a.jpg
       001_b.jpg
@@ -56,21 +56,21 @@ dist\
 ```
 
 Alternatively, any local image folder can be selected with the
-`WEDDING_MEMORY_IMAGES` environment variable:
+`WEDDING_MEMORY_RESOURCES` environment variable:
 
 ```powershell
-$env:WEDDING_MEMORY_IMAGES = "D:\WeddingMemoryBilder"
+$env:WEDDING_MEMORY_RESOURCES = "D:\WeddingMemoryBilder"
 .\dist\WeddingMemory.exe
 ```
 
-The repository contains only neutral demo SVGs under `images/memory1`, so the
+The repository contains only neutral demo SVGs under `resources/memory1`, so the
 application can be started and tested directly after cloning. Personal photos
 should be stored in an external folder. Supported formats are JPG, JPEG, PNG,
 SVG, and WEBP.
 
 > **Privacy:** Before committing, make sure that no personal photos, videos,
 > audio files, names, addresses, or other private descriptions have been
-> placed under `images/`. The `.gitignore` file prevents the usual private
+> placed under `resources/`. The `.gitignore` file prevents the usual private
 > media formats from being tracked.
 
 Every subfolder named `memory1`, `memory2`, and so on is automatically
@@ -90,11 +90,12 @@ the start of every game. All discovered memories are shown as selectable
 buttons in the moderator view. The `Play memories randomly` setting can also
 be enabled directly on the moderator page.
 
-After the last memory, the current scores are displayed. If multiple teams
-are tied, the moderator can start a tiebreaker using `Start tiebreaker`.
-Only the tied teams participate, and random pairs from a randomly selected
-memory are loaded. If the teams are tied again, another tiebreaker can be
-started.
+After the last memory, the winner display shows the final ranking. If multiple
+teams are tied, it is marked as a tie and the moderator can either finish the
+game or start a tiebreaker using `Start tiebreaker`. Only the tied teams
+participate in the tiebreaker; their existing points are retained. The display
+labels a tiebreaker as `Zusatzrunde` instead of showing the selected memory
+name. If the teams are tied again, another tiebreaker can be started.
 
 Before a tiebreaker starts, the current scores remain visible as the winner
 display. The moderator starts it with `Start tiebreaker`. During the regular
@@ -105,8 +106,14 @@ only its own tiebreaker points; regular points determine only which teams
 qualify for the tiebreaker.
 
 A custom card back can be placed as `card-back.svg` or `card-back.png` in the
-external `images` folder and selected through `CARD_BACK_IMAGE` in `config.py`.
+external `resources` folder and selected through `CARD_BACK_IMAGE` in `config.py`.
 A browser icon is already included at `static/favicon.svg`.
+
+The display starts with the centered contents of `resources/title_page.txt` over a
+translucent, centered card back. The moderator can hide or show this title
+slide at any time. The file is copied next to the executable during a build,
+beside `resources/card-back.svg`. The rules are loaded from
+`resources/rules.txt` in both views.
 
 ## Image descriptions
 
@@ -143,8 +150,10 @@ Other clones must then be freshly cloned or migrated to the new history.
 
 The `Settings` menu in the moderator view can be used to change the grid size,
 number of teams, round duration, and delay after an incorrect attempt. The
-grid must contain an even number of cards so that complete pairs can be
-formed. In an enlarged view, the image fills the screen; use the mouse wheel
+grid may have an odd number of places; the unused place remains empty so that
+all displayed cards still form complete pairs. Changing the grid reloads the
+current memory with complete pairs instead of cutting individual cards. In an
+enlarged view, the image fills the screen; use the mouse wheel
 to zoom in or out and drag with the mouse button pressed to pan. The zoomed
 card, zoom factor, and image position are synchronized between the moderator
 and display views. If the image is zoomed during an incorrect attempt, the
@@ -206,7 +215,7 @@ the images next to it:
 ```text
 dist/
 ├── WeddingMemory
-└── images/
+└── resources/
     ├── memory1/
     └── memory2/
 ```

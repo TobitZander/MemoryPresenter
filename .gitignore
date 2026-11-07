@@ -11,11 +11,11 @@ dist/
 .env.*
 
 # Personal media must stay outside the repository.
-images/**/*.jpg
-images/**/*.jpeg
-images/**/*.png
-images/**/*.webp
-images/**/*.gif
-images/**/*.mp3
-images/**/*.mp4
-images/**/*.mepj
+resources/**/*.jpg
+resources/**/*.jpeg
+resources/**/*.png
+resources/**/*.webp
+resources/**/*.gif
+resources/**/*.mp3
+resources/**/*.mp4
+resources/**/*.mepj

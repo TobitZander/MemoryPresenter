@@ -3,7 +3,13 @@ import random
 from pathlib import Path
 
 from card import Card
-from config import DESCRIPTION_FILENAME, GRID_COLS, GRID_ROWS, IMAGE_ROOT, SUPPORTED_IMAGE_EXTENSIONS
+from config import (
+    DESCRIPTION_FILENAME,
+    GRID_COLS,
+    GRID_ROWS,
+    RESOURCE_ROOT,
+    SUPPORTED_IMAGE_EXTENSIONS,
+)
 
 
 def _read_descriptions(image_dir):
@@ -20,7 +26,7 @@ def _read_descriptions(image_dir):
 
 
 def load_memory(memory_name, required_cards=None):
-    image_dir = IMAGE_ROOT / memory_name
+    image_dir = RESOURCE_ROOT / memory_name
     if not image_dir.exists():
         raise FileNotFoundError(f"Memory-Ordner nicht gefunden: {image_dir}")
 
@@ -45,11 +51,11 @@ def load_memory(memory_name, required_cards=None):
     for pair_number, (pair_id, files) in enumerate(selected_pairs, start=1):
         chosen_files = random.sample(files, 2)
         for file in chosen_files:
-            relative_path = file.relative_to(IMAGE_ROOT).as_posix()
+            relative_path = file.relative_to(RESOURCE_ROOT).as_posix()
             cards.append(Card(
                 id=len(cards),
                 pair_id=str(pair_number),
-                image_path=f"/images/{relative_path}",
+                image_path=f"/resources/{relative_path}",
                 description=descriptions.get(file.name, ""),
                 display_pair_id=str(pair_number),
             ))

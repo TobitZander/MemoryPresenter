@@ -21,7 +21,7 @@ class GameState:
     def __init__(self):
 
         if not MEMORY_SETS:
-            raise ValueError("Keine Memory-Ordner im images-Ordner gefunden.")
+            raise ValueError("Keine Memory-Ordner im resources-Ordner gefunden.")
         self.memory_order = MEMORY_SETS.copy()
         self.randomize_all_memories = RANDOMIZE_ALL_MEMORIES
         if self.randomize_all_memories:
@@ -72,6 +72,7 @@ class GameState:
         self.zoom_offset_x = 0.0
         self.zoom_offset_y = 0.0
         self.theme = "light"
+        self.title_page_visible = True
         self.paused = True
         self.lock = threading.RLock()
 
@@ -321,6 +322,7 @@ class GameState:
             self.tiebreaker_teams = []
             self.tiebreak_scores = [0] * len(self.team_names)
             self.tiebreak_pending = False
+            self.title_page_visible = True
             self.memory_boards.clear()
             self.cards = []
             self.memory_order = MEMORY_SETS.copy()
@@ -331,7 +333,7 @@ class GameState:
     def to_dict(self):
         with self.lock:
             return {
-                "memory": self.current_memory,
+                "memory": "Zusatzrunde" if self.tiebreaker else self.current_memory,
                 "cards": [card.to_dict() if card is not None else None for card in self.cards],
                 "active_team": self.current_team,
                 "team_names": self.team_names,
@@ -362,6 +364,7 @@ class GameState:
                 "zoom_offset_x": self.zoom_offset_x,
                 "zoom_offset_y": self.zoom_offset_y,
                 "theme": self.theme,
+                "title_page_visible": self.title_page_visible,
                 "paused": self.paused,
                 "memory_index": self.memory_index,
                 "memory_sets": MEMORY_SETS,
@@ -411,10 +414,11 @@ class GameState:
             randomize = settings.get("randomize_all_memories", self.randomize_all_memories)
             if isinstance(randomize, str):
                 randomize = randomize.lower() == "true"
-            if rows < 1 or cols < 1 or rows * cols % 2:
-                raise ValueError("Das Spielfeld muss mindestens zwei und eine gerade Kartenanzahl haben.")
+            if rows < 1 or cols < 1 or rows * cols < 2:
+                raise ValueError("Das Spielfeld muss mindestens zwei Plätze haben.")
             if team_count < 1 or round_time < 1 or auto_close < 0:
                 raise ValueError("Teams und Zeiten müssen positive Werte sein.")
+            dimensions_changed = (rows, cols) != (self.grid_rows, self.grid_cols)
             self.grid_rows = rows
             self.grid_cols = cols
             self.configured_grid_rows = rows
@@ -430,19 +434,19 @@ class GameState:
             self.total_scores = (old_scores + [0] * team_count)[:team_count]
             self.scores = self.total_scores.copy()
             self.current_team %= team_count
-            slot_count = rows * cols
-            self.cards = list(self.cards[:slot_count])
-            self.cards.extend([None] * (slot_count - len(self.cards)))
-            self.grid_rows = rows
-            self.grid_cols = cols
-            self.configured_grid_rows = rows
-            self.configured_grid_cols = cols
-            self.open_cards = [
-                card for card in self.cards
-                if card is not None and card.open and not card.matched
-            ]
-            self.memory_boards[self.current_memory] = (
-                self.grid_rows,
-                self.grid_cols,
-                self.cards,
-            )
+            if dimensions_changed:
+                self.memory_boards.clear()
+                self.load_memory(self.current_memory, preserve_board=False)
+            else:
+                slot_count = rows * cols
+                self.cards = list(self.cards[:slot_count])
+                self.cards.extend([None] * (slot_count - len(self.cards)))
+                self.open_cards = [
+                    card for card in self.cards
+                    if card is not None and card.open and not card.matched
+                ]
+                self.memory_boards[self.current_memory] = (
+                    self.grid_rows,
+                    self.grid_cols,
+                    self.cards,
+                )

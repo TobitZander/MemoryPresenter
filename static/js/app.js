@@ -5,6 +5,7 @@ let pendingRevealIndex = null;
 let selectedColumn = null;
 let selectedRow = null;
 let hoveredCardIndex = null;
+let rulesLoaded = false;
 
 function showMatchCelebration() {
     const celebration = document.getElementById("matchCelebration");
@@ -25,11 +26,50 @@ function formatTime(seconds) {
 function formatMismatchTime(seconds) {
     return `Noch offen: ${Math.max(0, Math.ceil(seconds))}s`;
 }
+function loadRules() {
+    const rulesList = document.getElementById("rulesList");
+    if (!rulesList || rulesLoaded) return;
+    fetch("/rules")
+        .then((response) => {
+            if (!response.ok) throw new Error("Regeldatei konnte nicht geladen werden.");
+            return response.text();
+        })
+        .then((text) => {
+            rulesList.replaceChildren(...text.split(/\r?\n/)
+                .map((line) => line.trim())
+                .filter(Boolean)
+                .map((line) => {
+                    const item = document.createElement("li");
+                    item.textContent = line;
+                    return item;
+                }));
+            rulesLoaded = true;
+        })
+        .catch((error) => {
+            rulesList.replaceChildren();
+            const item = document.createElement("li");
+            item.textContent = error.message;
+            rulesList.append(item);
+        });
+}
+function fitTitlePageText() {
+    const text = document.getElementById("titlePageText");
+    if (!text || !text.textContent) return;
+    text.style.fontSize = "";
+    let fontSize = parseFloat(window.getComputedStyle(text).fontSize);
+    for (let attempt = 0; attempt < 60; attempt += 1) {
+        if (text.scrollWidth <= text.clientWidth && text.scrollHeight <= text.clientHeight) break;
+        fontSize *= 0.92;
+        text.style.fontSize = `${fontSize}px`;
+    }
+}
 function publishZoomTransform() {
+    const image = document.querySelector("#lightbox img");
+    if (!image || !image.clientWidth || !image.clientHeight) return;
     socket.emit("zoom_transform", {
         scale: zoomScale,
-        offset_x: zoomOffsetX,
-        offset_y: zoomOffsetY
+        offset_x: zoomOffsetX / image.clientWidth,
+        offset_y: zoomOffsetY / image.clientHeight
     });
 }
 
@@ -63,6 +103,28 @@ function update(stateData) {
     document.body.classList.toggle("light-mode", state.theme === "light");
     const themeToggle = document.getElementById("themeToggle");
     if (themeToggle) themeToggle.textContent = state.theme === "light" ? "Dark-Mode" : "White-Mode";
+    const titlePage = document.getElementById("titlePage");
+    if (titlePage) titlePage.hidden = !state.title_page_visible;
+    const titlePageToggle = document.getElementById("titlePageToggle");
+    if (titlePageToggle) {
+        titlePageToggle.textContent = state.title_page_visible
+            ? "Titelfolie ausblenden"
+            : "Titelfolie einblenden";
+    }
+    const titlePageText = document.getElementById("titlePageText");
+    if (titlePageText && !titlePageText.dataset.loaded) {
+        fetch("/title-page")
+            .then((response) => response.ok ? response.text() : "")
+            .then((text) => {
+                titlePageText.textContent = text.trim();
+                titlePageText.dataset.loaded = "true";
+                fitTitlePageText();
+            })
+            .catch(() => {
+                titlePageText.textContent = "";
+                titlePageText.dataset.loaded = "true";
+            });
+    }
     const pauseToggle = document.getElementById("pauseToggle");
     if (pauseToggle) {
         const timerPaused = state.paused || state.match_status === "match";
@@ -272,9 +334,7 @@ function update(stateData) {
     if (winner) {
         winner.hidden = state.winner === null;
         if (state.winner !== null) {
-            const rankingIndices = state.tiebreak_pending
-                ? state.winner
-                : state.team_names.map((_, index) => index);
+            const rankingIndices = state.team_names.map((_, index) => index);
             const ranking = rankingIndices.map((index) => ({
                 score: state.scores[index],
                 index
@@ -302,9 +362,9 @@ function update(stateData) {
                 const rankLabel = medals[group.rank] || `${group.rank}.`;
                 return `${rankLabel} ${group.names.join(", ")} (${group.score} Punkte)`;
             });
-            winner.className = `winner display-winner winner-count-${state.winner.length}${state.tiebreak_pending ? " pending-tiebreak" : ""}`;
+            winner.className = `winner display-winner winner-count-${rankingIndices.length}${state.tiebreak_pending ? " pending-tiebreak" : ""}`;
             const heading = state.tiebreak_pending
-                ? "🏆 Zwischenstand – Zusatzrunde erforderlich"
+                ? "🏆 Gewinner – Gleichstand"
                 : "🏆 Gewinner";
             winner.innerHTML = `<strong>${heading}</strong><div class="winner-results">${winners.join("<br>")}</div>`;
         }
@@ -325,13 +385,18 @@ function update(stateData) {
                 lightbox.innerHTML = `<img draggable="false" src="${enlarged.image_path}" alt="Vergrößerte Karte">${description}${closeButton}`;
             }
             zoomScale = state.zoom_scale;
-            zoomOffsetX = state.zoom_offset_x;
-            zoomOffsetY = state.zoom_offset_y;
+            const renderedImage = lightbox.querySelector("img");
+            if (!renderedImage) return;
+            zoomOffsetX = state.zoom_offset_x * renderedImage.clientWidth;
+            zoomOffsetY = state.zoom_offset_y * renderedImage.clientHeight;
             applyZoomTransform();
         }
     }
     const rules = document.getElementById("rules");
-    if (rules) rules.hidden = !state.rules_visible;
+    if (rules) {
+        rules.hidden = !state.rules_visible;
+        loadRules();
+    }
     ["settingRows", "settingCols", "settingTeams", "settingRoundTime", "settingCloseDelay"].forEach((id) => {
         const input = document.getElementById(id);
         if (input && document.activeElement !== input) {
@@ -351,6 +416,7 @@ socket.on("state", update);
 socket.on("error_message", (data) => window.alert(data.message));
 socket.on("server_shutdown", () => window.close());
 window.addEventListener("load", () => socket.emit("request_state"));
+window.addEventListener("resize", fitTitlePageText);
 document.addEventListener("keydown", (event) => {
     if (!state) return;
     if (event.ctrlKey && event.key.toLowerCase() === "p") {
@@ -424,17 +490,20 @@ let dragStart = null;
 document.addEventListener("wheel", (event) => {
     const lightbox = document.getElementById("lightbox");
     if (!lightbox || lightbox.hidden) return;
+    if (!document.body.classList.contains("moderator")) return;
     event.preventDefault();
     const image = lightbox.querySelector("img");
     if (!image) return;
     const oldScale = zoomScale;
     const factor = event.deltaY < 0 ? 1.15 : 1 / 1.15;
-    zoomScale = Math.min(8, Math.max(1, zoomScale * factor));
-    const rect = image.getBoundingClientRect();
-    const pointerX = event.clientX - rect.left;
-    const pointerY = event.clientY - rect.top;
-    zoomOffsetX -= pointerX * (zoomScale / oldScale - 1);
-    zoomOffsetY -= pointerY * (zoomScale / oldScale - 1);
+    const nextScale = Math.min(8, Math.max(1, zoomScale * factor));
+    const pointerX = event.clientX - lightbox.clientWidth / 2;
+    const pointerY = event.clientY - lightbox.clientHeight / 2;
+    const imagePointX = (pointerX - zoomOffsetX) / oldScale;
+    const imagePointY = (pointerY - zoomOffsetY) / oldScale;
+    zoomScale = nextScale;
+    zoomOffsetX = pointerX - imagePointX * zoomScale;
+    zoomOffsetY = pointerY - imagePointY * zoomScale;
     publishZoomTransform();
 }, {passive: false});
 document.addEventListener("mousedown", (event) => {
@@ -458,7 +527,8 @@ document.addEventListener("dragstart", (event) => {
 });
 function applyZoomTransform() {
     const image = document.querySelector("#lightbox img");
-    if (image) image.style.transform = `translate(${zoomOffsetX}px, ${zoomOffsetY}px) scale(${zoomScale})`;
+    if (image) image.style.transform =
+        `matrix(${zoomScale}, 0, 0, ${zoomScale}, ${zoomOffsetX}, ${zoomOffsetY})`;
 }
 document.addEventListener("dblclick", (event) => {
     const card = event.target.closest(".card");
