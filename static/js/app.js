@@ -10,7 +10,7 @@ let rulesLoaded = false;
 function showMatchCelebration() {
     const celebration = document.getElementById("matchCelebration");
     if (!celebration) return;
-    celebration.innerHTML = '<strong>🎉</strong>' +
+    celebration.innerHTML = '<strong class="party-popper" aria-hidden="true"></strong>' +
         Array.from({length: 28}, (_, index) =>
             `<i style="--particle-angle:${index * (360 / 28)}deg;--particle-distance:${140 + (index % 5) * 34}px;--particle-color:hsl(${index * 47 % 360} 85% 55%)"></i>`
         ).join("");

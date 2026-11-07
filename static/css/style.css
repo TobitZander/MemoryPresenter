@@ -194,8 +194,42 @@ h1 {
 .match-celebration strong {
     position: relative;
     z-index: 2;
-    font-size: clamp(8rem, 28vw, 24rem);
-    line-height: 1
+    width: clamp(9rem, 22vw, 20rem);
+    height: clamp(7rem, 18vw, 16rem);
+    transform: rotate(-20deg);
+    background:
+        linear-gradient(145deg, transparent 0 42%, #f7c948 43% 58%, transparent 59%) 58% 3% / 35% 35% no-repeat,
+        linear-gradient(35deg, transparent 0 42%, #ef476f 43% 58%, transparent 59%) 88% 22% / 35% 35% no-repeat,
+        linear-gradient(180deg, transparent 0 42%, #06d6a0 43% 58%, transparent 59%) 76% 0 / 35% 35% no-repeat;
+}
+
+.party-popper::before {
+    content: "";
+    position: absolute;
+    left: 8%;
+    bottom: 8%;
+    width: 70%;
+    height: 52%;
+    background: linear-gradient(155deg, #ff6b6b, #d62828);
+    clip-path: polygon(0 0, 100% 35%, 68% 100%);
+    border-radius: 8% 45% 20% 12%;
+    transform: rotate(12deg);
+}
+
+.party-popper::after {
+    content: "";
+    position: absolute;
+    left: 47%;
+    top: 5%;
+    width: 9%;
+    height: 78%;
+    background: repeating-linear-gradient(
+        90deg,
+        #ffd166 0 22%,
+        transparent 22% 44%
+    );
+    transform: rotate(38deg);
+    clip-path: polygon(0 0, 100% 0, 55% 100%, 0 100%);
 }
 
 .match-celebration i {
@@ -519,6 +553,16 @@ body.light-mode button.pause-active {
     pointer-events: none
 }
 
+.card.revealed.selected-row,
+.card.revealed.selected-column {
+    box-shadow: none !important;
+}
+
+.card.revealed.selected-row::after,
+.card.revealed.selected-column::after {
+    display: none;
+}
+
 .selected {
     color: #fff !important;
     background: #3f5f87 !important;
@@ -787,7 +831,7 @@ body:not(.light-mode) .card-face {
     max-height: 100%;
     background: transparent !important;
     background-color: transparent !important;
-    border: 4px solid var(--pair-color, #70829d);
+    border: 6px solid var(--pair-color, #70829d);
     border-radius: inherit
 }
 
@@ -871,7 +915,8 @@ body:not(.light-mode) .card-back {
     position: fixed;
     top: 50%;
     left: 50%;
-    width: min(90vw, 1400px);
+    width: max-content;
+    max-width: calc(100vw - 2rem);
     max-height: 90vh;
     transform: translate(-50%, -50%);
     display: flex;
@@ -888,6 +933,10 @@ body:not(.light-mode) .card-back {
     white-space: normal;
     overflow-wrap: anywhere;
     overflow: visible;
+}
+
+.moderator .display-winner {
+    display: none !important;
 }
 
 .display-winner[hidden],
@@ -921,7 +970,8 @@ body:not(.light-mode) .card-back {
 .display-winner.pending-tiebreak {
     top: 50%;
     left: 50%;
-    width: min(90vw, 1400px);
+    width: max-content;
+    max-width: calc(100vw - 2rem);
     font-size: clamp(1.6rem, 3.5vw, 4rem);
     background: #151d2af2;
     border: 2px solid #ffd36a
